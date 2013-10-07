@@ -2621,7 +2621,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
             this.search.on("keyup", this.bind(function (e) {
                 this.keydowns = 0;
-                this.resizeSearch();
+                //this.resizeSearch();
             })
             );
 
