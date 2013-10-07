@@ -4,6 +4,9 @@ Copyright 2013 Riccardo De Martis
 
 Version: @@ver@@ Timestamp: @@timestamp@@
 
+Original Version: 3.4.3 Timestamp: Tue Sep 17 06:47:14 PDT 2013
+Fork Version: 3.4.4-Riccardo De Martis - fork for jobyourlife.com Timestamp: Tue Oct 07 11:07:00 GMT 2013
+
 This software is licensed under the Apache License, Version 2.0 (the "Apache License") or the GNU
 General Public License version 2 (the "GPL License"). You may choose either license to govern your
 use of this software only upon the condition that you accept all of the terms of either the Apache
@@ -885,6 +888,12 @@ the specific language governing permissions and limitations under the Apache Lic
                             if (formatted!==undefined) {
                                 label.html(formatted);
                             }
+														
+                            //cssCheckbox=$(document.createElement("span"));
+                            //cssCheckbox.addClass("select2-css-checkbox");
+                            
+														//node.append(cssCheckbox);
+														node.append('<span></span>');
 
                             node.append(label);
 
@@ -1037,7 +1046,7 @@ the specific language governing permissions and limitations under the Apache Lic
             if (this.mutationCallback === undefined) {
                 this.mutationCallback = function (mutations) {
                     mutations.forEach(sync);
-                }
+                };
             }
 
             // safari and chrome
@@ -1777,7 +1786,6 @@ the specific language governing permissions and limitations under the Apache Lic
     SingleSelect2 = clazz(AbstractSelect2, {
 
         // single
-
         createContainer: function () {
             var container = $(document.createElement("div")).attr({
                 "class": "select2-container"
@@ -2350,16 +2358,39 @@ the specific language governing permissions and limitations under the Apache Lic
             }).html([
                 "<ul class='select2-choices'>",
                 "  <li class='select2-search-field'>",
-                "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='select2-input'>",
+               // "    <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='select2-input'>",
                 "  </li>",
                 "</ul>",
                 "<div class='select2-drop select2-drop-multi select2-display-none'>",
+                "		<div class='select2-search'>",
+                "     <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='select2-input'/>",
+                "		</div>",
                 "   <ul class='select2-results'>",
                 "   </ul>",
                 "</div>"].join(""));
             return container;
         },
-
+        /*
+        // single
+        createContainer: function () {
+            var container = $(document.createElement("div")).attr({
+                "class": "select2-container"
+            }).html([
+                "<a href='javascript:void(0)' onclick='return false;' class='select2-choice' tabindex='-1'>",
+                "   <span class='select2-chosen'>&nbsp;</span><abbr class='select2-search-choice-close'></abbr>",
+                "   <span class='select2-arrow'><b></b></span>",
+                "</a>",
+                "<input class='select2-focusser select2-offscreen' type='text'/>",
+                "<div class='select2-drop select2-display-none'>",
+                "   <div class='select2-search'>",
+                "       <input type='text' autocomplete='off' autocorrect='off' autocapitalize='off' spellcheck='false' class='select2-input'/>",
+                "   </div>",
+                "   <ul class='select2-results'>",
+                "   </ul>",
+                "</div>"].join(""));
+            return container;
+        },
+				*/
         // multi
         prepareOpts: function () {
             var opts = this.parent.prepareOpts.apply(this, arguments),

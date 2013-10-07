@@ -1,10 +1,13 @@
 /*
 Version: @@ver@@ Timestamp: @@timestamp@@
+
+Original Version: 3.4.3 Timestamp: Tue Sep 17 06:47:14 PDT 2013
+Fork Version by Riccardo De Martis - fork for jobyourlife.com 
 */
 .select2-container {
     margin: 0;
     position: relative;
-    display: inline-block;
+    display: inline-block; 
     /* inline-block for ie7 */
     zoom: 1;
     *display: inline;
@@ -225,10 +228,11 @@ Version: @@ver@@ Timestamp: @@timestamp@@
 
 .select2-search input {
     width: 100%;
+    max-width:400px;
     height: auto !important;
     min-height: 26px;
     padding: 4px 20px 4px 5px;
-    margin: 0;
+    margin: 8px 0 0 0;
 
     outline: 0;
     font-family: sans-serif;
@@ -317,7 +321,7 @@ Version: @@ver@@ Timestamp: @@timestamp@@
 
 /* results */
 .select2-results {
-    max-height: 200px;
+    max-height: 162px;
     padding: 0 0 0 4px;
     margin: 4px 4px 4px 0;
     position: relative;
@@ -343,6 +347,7 @@ Version: @@ver@@ Timestamp: @@timestamp@@
     list-style: none;
     display: list-item;
     background-image: none;
+    padding: 3px 0;
 }
 
 .select2-results li.select2-result-with-children > .select2-result-label {
@@ -361,7 +366,23 @@ Version: @@ver@@ Timestamp: @@timestamp@@
          -moz-user-select: none;
           -ms-user-select: none;
               user-select: none;
+              
+		display: inline;
 }
+.select2-results .select2-result > span {
+  /* css-checkbox state */      
+	background-color: transparent;
+	background-image: url(../../../img/company/checkbox-multy.png);
+	background-position: 5px 1px;
+	background-repeat: no-repeat;
+	padding-left: 24px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;              
+}
+.select2-results .select2-selected.select2-result > span{
+	background-position: 5px -18px;
+} 
 
 .select2-results .select2-highlighted {
 	text-decoration: underline;
@@ -405,7 +426,7 @@ disabled look for disabled choices in the results dropdown
 }
 
 .select2-results .select2-selected {
-    display: none;
+ 	/*display: none;*/ /* display css-checkbox instead*/
 }
 
 .select2-more-results.select2-active {
@@ -433,7 +454,7 @@ disabled look for disabled choices in the results dropdown
 }
 
 .select2-container.select2-container-disabled .select2-choice abbr {
-    //display: none;
+    display: none;
 }
 
 
@@ -610,7 +631,7 @@ transition: border linear .2s,box-shadow linear .2s;
 
 .select2-highlighted .select2-match,
 .select2-highlighted .select2-match{
-	/*color: white;	*/
+	/*color: white;*/
 }
 
 
