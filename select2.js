@@ -1,5 +1,6 @@
 /*
 Copyright 2012 Igor Vaynberg
+Copyright 2013 Riccardo De Martis
 
 Version: @@ver@@ Timestamp: @@timestamp@@
 
@@ -1130,7 +1131,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
         // abstract
         positionDropdown: function() {
-            var $dropdown = this.dropdown.hide(),
+            var $dropdown = this.dropdown,
                 offset = this.container.offset(),
                 height = this.container.outerHeight(false),
                 width = this.container.outerWidth(false),
@@ -1148,8 +1149,6 @@ the specific language governing permissions and limitations under the Apache Lic
                 above,
                 css,
                 resultsListNode;
-
-            $dropdown.show();
 
             if (this.opts.dropdownAutoWidth) {
                 resultsListNode = $('.select2-results', $dropdown)[0];
@@ -1710,7 +1709,7 @@ the specific language governing permissions and limitations under the Apache Lic
         // abstract
         getPlaceholderOption: function() {
             if (this.select) {
-                var firstOption = this.select.children('option').first();
+                var firstOption = this.select.children().first();
                 if (this.opts.placeholderOption !== undefined ) {
                     //Determine the placeholder option based on the specified placeholderOption setting
                     return (this.opts.placeholderOption === "first" && firstOption) ||
