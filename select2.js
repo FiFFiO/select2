@@ -889,10 +889,6 @@ the specific language governing permissions and limitations under the Apache Lic
                                 label.html(formatted);
                             }
 														
-                            //cssCheckbox=$(document.createElement("span"));
-                            //cssCheckbox.addClass("select2-css-checkbox");
-                            
-														//node.append(cssCheckbox);
 														node.append('<span></span>');
 
                             node.append(label);
@@ -1699,12 +1695,37 @@ the specific language governing permissions and limitations under the Apache Lic
 
             if (data) {
                 this.highlight(index);
-                this.onSelect(data, options);
+                
+                if(highlighted.hasClass('select2-selected')){
+                	var data=highlighted.data();
+                	
+                	var uns=this.findChoiceByText(data.select2Data.text);
+                	if(uns && uns.length){
+	                	this.unselect(uns);
+	                }else{
+	                	throw new Error("cannot find element to unselect");
+                	}
+                }else{
+	                this.onSelect(data, options);
+                }
+                
             } else if (options && options.noFocus) {
                 this.close();
             }
         },
 
+        // abstract
+				findChoiceByText: function(text){
+					var choises=this.container.find('.select2-search-choice');
+					for(var i=0,len=choises.length;i<len;i++){
+						
+						if($(choises[i]).find('div').html()==text){
+							return $(choises[i]);
+						}
+						
+					}
+					return null;
+				},
         // abstract
         getPlaceholder: function () {
             var placeholderOption;
@@ -2450,7 +2471,6 @@ the specific language governing permissions and limitations under the Apache Lic
         },
 
         selectChoice: function (choice) {
-
             var selected = this.container.find(".select2-search-choice-focus");
             if (selected.length && choice && choice[0] == selected[0]) {
 
@@ -2764,7 +2784,6 @@ the specific language governing permissions and limitations under the Apache Lic
 
         // multi
         onSelect: function (data, options) {
-
             if (!this.triggerSelect(data)) { return; }
 
             this.addSelectedChoice(data);
@@ -2904,6 +2923,9 @@ the specific language governing permissions and limitations under the Apache Lic
                     choice.addClass("select2-selected");
                     // mark all children of the selected parent as selected
                     choice.find(".select2-result-selectable").addClass("select2-selected");
+                }else if(choice.hasClass('select2-selected')){
+                	choice.removeClass('select2-selected');
+                  choice.find(".select2-result-selectable").removeClass("select2-selected");
                 }
             });
 
