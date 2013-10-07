@@ -707,6 +707,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
             this.results = results = this.container.find(resultsSelector);
             this.search = search = this.container.find("input.select2-input");
+            this.searchPlaceholder = this.container.find(".select2-search-field");
 
             this.queryCount = 0;
             this.resultsPage = 0;
@@ -2702,19 +2703,31 @@ the specific language governing permissions and limitations under the Apache Lic
                 maxWidth = this.getMaxSearchWidth();
 
             if (placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) {
+            		this.searchPlaceholder.html(placeholder);
                 this.search.val(placeholder).addClass("select2-default");
                 // stretch the search box to full width of the container so as much of the placeholder is visible as possible
                 // we could call this.resizeSearch(), but we do not because that requires a sizer and we do not want to create one so early because of a firefox bug, see #944
                 this.search.width(maxWidth > 0 ? maxWidth : this.container.css("width"));
             } else {
+            		//this.searchPlaceholder.html('');
                 this.search.val("").width(10);
             }
         },
 
         // multi
+        updatePlaceholder: function () {
+          var placeholder = this.getPlaceholder();
+          if (placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) {
+        		this.searchPlaceholder.html(placeholder);
+           }
+        	
+				},
+								
+        // multi
         clearPlaceholder: function () {
             if (this.search.hasClass("select2-default")) {
                 this.search.val("").removeClass("select2-default");
+                this.searchPlaceholder.html('');
             }
         },
 
@@ -2905,6 +2918,9 @@ the specific language governing permissions and limitations under the Apache Lic
                 if (this.select) this.postprocessResults();
             }
             selected.remove();
+            
+            //function jyl
+            this.updatePlaceholder();
 
             this.opts.element.trigger({ type: "removed", val: this.id(data), choice: data });
             this.triggerChange({ removed: data });
