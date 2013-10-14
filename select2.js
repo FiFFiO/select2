@@ -1644,7 +1644,8 @@ the specific language governing permissions and limitations under the Apache Lic
                 }
 
                 if (data.results.length === 0 && checkFormatter(opts.formatNoMatches, "formatNoMatches")) {
-                    render("<li class='select2-no-results'>" + opts.formatNoMatches(search.val()) + "</li>");
+                    render("<li class='select2-zero-results'>" + opts.formatNoMatches(search.val()) + "</li>");
+                    //this.hideSearch();
                     return;
                 }
 
@@ -2622,7 +2623,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
             this.search.on("keyup", this.bind(function (e) {
                 this.keydowns = 0;
-                //this.resizeSearch();
+                //this.resizeSearch(); //placeholder jyl instead
             })
             );
 
@@ -2714,11 +2715,18 @@ the specific language governing permissions and limitations under the Apache Lic
             }
         },
 
+				hideSearch:function(){
+					this.search.parent().hide();
+				},
+				
         // multi
         updatePlaceholder: function () {
           var placeholder = this.getPlaceholder();
           if (placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) {
+          	this.search.addClass("select2-default");
         		this.searchPlaceholder.html(placeholder);
+           }else{
+           	this.clearPlaceholder();
            }
         	
 				},
@@ -2810,8 +2818,8 @@ the specific language governing permissions and limitations under the Apache Lic
                 this.search.width(10);
             } else {
                 if (this.countSelectableResults()>0) {
-                    this.search.width(10);
-                    this.resizeSearch();
+                    //this.search.width(10);	//placeholder jyl instead
+                    //this.resizeSearch();		//placeholder jyl instead
                     if (this.getMaximumSelectionSize() > 0 && this.val().length >= this.getMaximumSelectionSize()) {
                         // if we reached max selection size repaint the results so choices
                         // are replaced with the max selection reached message
@@ -2821,7 +2829,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 } else {
                     // if nothing left to select close
                     this.close();
-                    this.search.width(10);
+                    //this.search.width(10); //placeholder jyl instead
                 }
             }
 
@@ -2831,6 +2839,9 @@ the specific language governing permissions and limitations under the Apache Lic
 
             if (!options || !options.noFocus)
                 this.focusSearch();
+                
+            //update function jyl modifications
+            this.updatePlaceholder();
         },
 
         // multi
@@ -2874,6 +2885,10 @@ the specific language governing permissions and limitations under the Apache Lic
                   $(e.target).closest(".select2-search-choice").fadeOut('fast', this.bind(function(){
                       this.unselect($(e.target));
                       this.selection.find(".select2-search-choice-focus").removeClass("select2-search-choice-focus");
+                      
+                      // triggering removed - jyl modifications
+                      this.opts.element.trigger($.Event("select2-removed"));
+                      
                       this.close();
                       this.focusSearch();
                   })).dequeue();
@@ -2919,11 +2934,12 @@ the specific language governing permissions and limitations under the Apache Lic
             }
             selected.remove();
             
-            //function jyl
-            this.updatePlaceholder();
 
-            this.opts.element.trigger({ type: "removed", val: this.id(data), choice: data });
+            //this.opts.element.trigger({ type: "removed", val: this.id(data), choice: data }); //enabled only if unselect by click in delete .select2-search-choice
             this.triggerChange({ removed: data });
+            
+            //update function jyl modifications
+            this.updatePlaceholder();
         },
 
         // multi
