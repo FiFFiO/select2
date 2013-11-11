@@ -1805,7 +1805,7 @@ the specific language governing permissions and limitations under the Apache Lic
 				textualSearchInputObj:function(_val){
 					
 					if(typeof(_val)!='undefined' && _val && _val!='null'){
-						return $('#'+this.opts.textualSearchInputContainerId+' input.'+this.opts.textualSearchInputName+'[value='+_val+']');
+						return $('#'+this.opts.textualSearchInputContainerId+' input.'+this.opts.textualSearchInputName+'[value="'+_val+'"]');
 					}else{
 						return $('#'+this.opts.textualSearchInputContainerId+' input.'+this.opts.textualSearchInputName);
 						
