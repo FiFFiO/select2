@@ -1716,6 +1716,225 @@ the specific language governing permissions and limitations under the Apache Lic
             }
         },
 
+
+				// abstract - textualSearch
+				textualSearchInit:function(){
+					if(this.textualSearchCheck()){
+						this.textualSearchSyncInputs();
+					}
+				},        
+				
+				// abstract - textualSearch
+				textualSearch:function(){
+					if(this.textualSearchCheck){
+						
+						if($.inArray(this.search.val(),this.opts.textualSearchDeniedValues)==-1){
+							if(this.textualSearchAdd(this.search.val())){
+								//log(this.search.val()+' added');
+							}else{
+								log(this.search.val()+' NOT added');
+							}
+
+						}else{
+							log('Value denied');
+							return false;
+						}
+					}else{
+						log('textualSearch unavaible');
+					}
+				},
+				// abstract - textualSearch
+				textualSearchCheck:function(){
+					if(this.opts.textualSearchEnabled===true && 
+					this.opts.textualSearchInputName!="" && this.opts.textualSearchInputName.length!="" &&
+					this.opts.textualSearchInputContainerId!="" && this.opts.textualSearchInputContainerId.length
+					){ 
+						return true;
+					}else{
+						return false;
+					}
+				},
+				// abstract - textualSearch
+				textualSearchChkBtn:function(){
+					if(this.textualSearchCheck()){
+						this.textualSearchBtn();
+					}
+				},
+						
+				// abstract - textualSearch
+				textualSearchBtn:function(){
+					var btnClass1='select2-search-txt-btn';
+					var btnClass2=this.opts.textualSearchInputName+'-clazz';
+					var btn=this.search.parent().find('div.'+btnClass1+'.'+btnClass2);
+					if(btn.length===0 && this.search.val().length!==0){
+						var btnHtml=
+						 		 '<div class="'+btnClass1+' '+btnClass2+'" onclick="javascript:$(\'#'+this.select.attr('id')+'\').select2(\'textualSearch\');">'+
+                 '    <div>'+this.opts.textualSearchBtnString+'</div>' +
+                 '</div>';
+						this.search.parent().append(btnHtml);
+						
+					}else if(btn.length!==0 && this.search.val().length===0){
+						btn.fadeOut(400,function(){
+							btn.remove();
+						});
+					}
+				},
+				
+				// abstract - textualSearch
+				textualSearchAdd:function(_val){
+					var textualSearchInputName=this.opts.textualSearchInputName;
+					var textualSearchInputContainerId=this.opts.textualSearchInputContainerId;
+					
+					if(!this.textualSearchExists(_val)){
+						var input='<input type="hidden" class="'+textualSearchInputName+'" name="'+textualSearchInputName+'[]" value="'+_val+'" />';
+						$('#'+textualSearchInputContainerId).append(input);
+						if(this.textualSearchExists(_val)){
+							this.textualSearchAddChoice(_val);
+							
+							this.clearSearch(); // set the placeholder if necessary
+							return true;
+						}else{
+							return false;
+						}
+					}else{
+						return true;
+					}
+				},
+				
+				// abstract - textualSearch
+				textualSearchInputObj:function(_val){
+					
+					if(typeof(_val)!='undefined' && _val && _val!='null'){
+						return $('#'+this.opts.textualSearchInputContainerId+' input.'+this.opts.textualSearchInputName+'[value='+_val+']');
+					}else{
+						return $('#'+this.opts.textualSearchInputContainerId+' input.'+this.opts.textualSearchInputName);
+						
+					}
+				},
+				// abstract - textualSearch
+				textualSearchRemove:function(_val){
+					if(this.textualSearchExists(_val)){
+						$(this.textualSearchInputObj(_val)).remove();
+						this.clearSearch(); // set the placeholder if necessary
+						if(!this.textualSearchExists(_val)){
+							return true;
+						}
+					}
+					return false;
+				},
+				
+				
+				// abstract - textualSearch
+				textualSearchExists:function(_val){
+					if($(this.textualSearchInputObj(_val)).length){
+						return true;
+					}else{
+						return false;
+					}
+				},
+				
+				// abstract - textualSearch
+				unselectTxt: function (selected) {
+            selected = selected.closest(".select2-search-choice-txt");
+
+            if (selected.length === 0) {
+                throw "Invalid argument: " + selected + ". Must be .select2-search-choice";
+            }
+
+            var val=selected.find(".select2-search-choice-close").data('val');
+            if (!val) {
+                // prevent a race condition when the 'x' is clicked really fast repeatedly the event can be queued
+                // and invoked on an element already removed
+                return;
+            }
+						selected.remove();
+						this.textualSearchRemove(val);
+
+            //this.opts.element.trigger({ type: "removed", val: this.id(data), choice: data }); //enabled only if unselect by click in delete .select2-search-choice
+            //this.triggerChange();
+            
+            //update function jyl modifications
+            this.updatePlaceholder();
+        },
+				// abstract - textualSearch
+				textualSearchAddChoice: function (_val) {
+					if(this.textualSearchChoiceExists(_val)){
+						return false;
+					}
+            var choice= $(
+              "<li class='select2-search-choice-txt'>" +
+              "    <div>\""+_val+"\"</div>" +
+              "    <a href='#' onclick='return false;' class='select2-search-choice-close' tabindex='-1'></a>" +
+              "</li>");
+           
+            choice.find(".select2-search-choice-close")
+            		.data('val',_val)
+                .on("mousedown", killEvent)
+                .on("click dblclick", this.bind(function (e) {
+                if (!this.isInterfaceEnabled()) return;
+
+                $(e.target).closest(".select2-search-choice-txt").fadeOut('fast', this.bind(function(){
+                    this.unselectTxt($(e.target));
+                    this.selection.find(".select2-search-choice-focus").removeClass("select2-search-choice-focus");
+                    
+                    // triggering removed - jyl modifications
+                    this.opts.element.trigger($.Event("select2-removed"));
+                    
+                    this.close();
+                    this.focusSearch();
+                })).dequeue();
+                killEvent(e);
+            })).on("focus", this.bind(function () {
+                if (!this.isInterfaceEnabled()) return;
+                this.container.addClass("select2-container-active");
+                this.dropdown.addClass("select2-drop-active");
+            }));
+            choice.insertBefore(this.searchContainer);
+        },
+				// abstract - textualSearch
+        textualSearchChoiceExists:function(_val){
+        	var choices=this.container.find('.select2-search-choice-txt');
+        	for(var c=0,lc=choices.length;c<lc;c++){
+        		if($(choices[c]).find(".select2-search-choice-close").data('val')===_val){
+        			return true;
+        		}
+        	}
+        	return false;
+        },
+				// abstract - textualSearch
+        textualSearchInputExists:function(_val){
+        	var inputs=$(this.textualSearchInputObj());
+        	for(var i=0,l=inputs.length;i<l;i++){
+						if(inputs[i].value==_val){
+							return true;
+						}
+					}
+					return false;
+        },
+				// abstract - textualSearch
+				textualSearchSyncInputs: function () {
+					var inputs=$(this.textualSearchInputObj());
+					var choices=this.container.find('.select2-search-choice-txt');
+					
+					// TODO: remove choices values not found in -> inputs
+					/*
+					for(var c in choices){
+						var v=$(choices[c]).find(".select2-search-choice-close").data('val');
+						if(!this.textualSearchInputExists(v)){
+							//this.textualSearchRemove(v);
+							//$(choices[c]).remove();
+	            //this.opts.element.trigger($.Event("select2-removed"));
+						}
+					}
+					*/
+					// add input values in -> choices
+					for(var i=0,l=inputs.length;i<l;i++){
+						this.textualSearchAddChoice(inputs[i].value);
+					}
+						
+					this.updatePlaceholder();		
+				},
+				
         // abstract
 				findChoiceByText: function(text){
 					var choises=this.container.find('.select2-search-choice');
@@ -2580,12 +2799,14 @@ the specific language governing permissions and limitations under the Apache Lic
                         killEvent(e);
                         return;
                     case KEY.ENTER:
+                        //this.textualSearch();
                         this.selectHighlighted();
                         killEvent(e);
                         return;
                     case KEY.TAB:
-                        this.selectHighlighted({noFocus:true});
+                    //    this.selectHighlighted({noFocus:true});
                         this.close();
+                        killEvent(e);
                         return;
                     case KEY.ESC:
                         this.cancel(e);
@@ -2624,6 +2845,7 @@ the specific language governing permissions and limitations under the Apache Lic
             this.search.on("keyup", this.bind(function (e) {
                 this.keydowns = 0;
                 //this.resizeSearch(); //placeholder jyl instead
+                this.textualSearchChkBtn();
             })
             );
 
@@ -2703,7 +2925,10 @@ the specific language governing permissions and limitations under the Apache Lic
             var placeholder = this.getPlaceholder(),
                 maxWidth = this.getMaxSearchWidth();
 
-            if (placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) {
+            if (
+            	(placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) &&
+            	(!this.textualSearchCheck() || $(this.textualSearchInputObj()).length===0) 
+            ) {
             		this.searchPlaceholder.html(placeholder);
                 this.search.val(placeholder).addClass("select2-default");
                 // stretch the search box to full width of the container so as much of the placeholder is visible as possible
@@ -2711,7 +2936,8 @@ the specific language governing permissions and limitations under the Apache Lic
                 this.search.width(maxWidth > 0 ? maxWidth : this.container.css("width"));
             } else {
             		//this.searchPlaceholder.html('');
-                this.search.val("").width(10);
+                //this.search.val("").width(10);
+                this.search.val("");
             }
         },
 
@@ -2722,7 +2948,9 @@ the specific language governing permissions and limitations under the Apache Lic
         // multi
         updatePlaceholder: function () {
           var placeholder = this.getPlaceholder();
-          if (placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) {
+          if ((placeholder !== undefined  && this.getVal().length === 0 && this.search.hasClass("select2-focused") === false) &&
+          	(!this.textualSearchCheck() || $(this.textualSearchInputObj()).length===0) 
+          	) {
           	this.search.addClass("select2-default");
         		this.searchPlaceholder.html(placeholder);
            }else{
@@ -3174,7 +3402,7 @@ the specific language governing permissions and limitations under the Apache Lic
             opts,
             select2,
             method, value, multiple,
-            allowedMethods = ["val", "destroy", "opened", "open", "close", "focus", "isFocused", "container", "dropdown", "onSortStart", "onSortEnd", "enable", "disable", "readonly", "positionDropdown", "data", "search"],
+            allowedMethods = ["val", "destroy", "opened", "open", "close", "focus", "isFocused", "container", "dropdown", "onSortStart", "onSortEnd", "enable", "disable", "readonly", "positionDropdown", "data", "search", "textualSearch",'textualSearchSyncInputs'],
             valueMethods = ["opened", "isFocused", "container", "dropdown"],
             propertyMethods = ["val", "data"],
             methodsMap = { search: "externalSearch" };
@@ -3193,6 +3421,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
                 select2 = multiple ? new MultiSelect2() : new SingleSelect2();
                 select2.init(opts);
+                select2.textualSearchInit();
             } else if (typeof(args[0]) === "string") {
 
                 if (indexOf(args[0], allowedMethods) < 0) {
@@ -3270,7 +3499,13 @@ the specific language governing permissions and limitations under the Apache Lic
         selectOnBlur: false,
         adaptContainerCssClass: function(c) { return c; },
         adaptDropdownCssClass: function(c) { return null; },
-        nextSearchTerm: function(selectedObject, currentSearchTerm) { return undefined; }
+        nextSearchTerm: function(selectedObject, currentSearchTerm) { return undefined; },
+    
+        textualSearchEnabled:false,
+        textualSearchInputName:"",
+        textualSearchInputContainerId:"",
+    		textualSearchDeniedValues:["null",null," ","  ","   "],
+    		textualSearchBtnString:"Text Search"
     };
 
     $.fn.select2.ajaxDefaults = {
