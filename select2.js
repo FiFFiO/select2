@@ -1730,8 +1730,11 @@ the specific language governing permissions and limitations under the Apache Lic
                 
                 if(highlighted.hasClass('select2-selected')){
                 	var data=highlighted.data();
-                	
-                	var uns=this.findChoiceByText(data.select2Data.text);
+                	if(this.select){
+                		var uns=this.findChoiceByText(data.select2Data.text);
+                	}else{
+                		var uns=this.findChoiceByText(data.select2Data.name);
+                	}
                 	if(uns && uns.length){
 	                	this.unselect(uns);
 	                }else{
@@ -1778,7 +1781,7 @@ the specific language governing permissions and limitations under the Apache Lic
 					if(this.opts.textualSearchEnabled===true && 
 					this.opts.textualSearchInputName!="" && this.opts.textualSearchInputName.length!="" &&
 					this.opts.textualSearchInputContainerId!="" && this.opts.textualSearchInputContainerId.length
-					){ 
+					){
 						return true;
 					}else{
 						return false;
@@ -1798,7 +1801,7 @@ the specific language governing permissions and limitations under the Apache Lic
 					var btn=this.search.parent().find('div.'+btnClass1+'.'+btnClass2);
 					if(btn.length===0 && this.search.val().length!==0){
 						var btnHtml=
-						 		 '<div class="'+btnClass1+' '+btnClass2+'" onclick="javascript:$(\'#'+this.select.attr('id')+'\').select2(\'textualSearch\');">'+
+						 		 '<div class="'+btnClass1+' '+btnClass2+'" onclick="javascript:$(\'#'+this.opts.element.attr('id')+'\').select2(\'textualSearch\');">'+
                  '    <div>'+this.opts.textualSearchBtnString+'</div>' +
                  '</div>';
 						this.search.parent().append(btnHtml);
@@ -3083,7 +3086,7 @@ the specific language governing permissions and limitations under the Apache Lic
             //this.clearSearch();
             //this.updateResults();
 
-            if (this.select || !this.opts.closeOnSelect) this.postprocessResults(data, false, this.opts.closeOnSelect===true);
+            if (/*this.select || */ !this.opts.closeOnSelect) this.postprocessResults(data, false, this.opts.closeOnSelect===true);
 
             if (this.opts.closeOnSelect) {
                 this.close();
@@ -3209,7 +3212,8 @@ the specific language governing permissions and limitations under the Apache Lic
             while((index = indexOf(this.id(data), val)) >= 0) {
                 val.splice(index, 1);
                 this.setVal(val);
-                if (this.select) this.postprocessResults();
+                //if (this.select) 
+                this.postprocessResults();
             }
 
             var evt = $.Event("select2-removing");
