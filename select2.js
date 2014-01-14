@@ -4,7 +4,7 @@ Copyright 2013 Riccardo De Martis
 
 Version: @@ver@@ Timestamp: @@timestamp@@
 
-Fork Version: 3.4.5-Riccardo De Martis - fork for jobyourlife.com
+Fork Version: 3.4.5-Riccardo De Martis - Jobyourlife - fork for jobyourlife.com
 
 This software is licensed under the Apache License, Version 2.0 (the "Apache License") or the GNU
 General Public License version 2 (the "GPL License"). You may choose either license to govern your
@@ -1721,32 +1721,35 @@ the specific language governing permissions and limitations under the Apache Lic
 
         // abstract
         selectHighlighted: function (options) {
-            var index=this.highlight(),
-                highlighted=this.results.find(".select2-highlighted"),
-                data = highlighted.closest('.select2-result').data("select2-data");
+          var index=this.highlight(),
+              highlighted=this.results.find(".select2-highlighted"),
+              data = highlighted.closest('.select2-result').data("select2-data");
 
-            if (data) {
-                this.highlight(index);
-                
-                if(highlighted.hasClass('select2-selected')){
-                	var data=highlighted.data();
-                	if(this.select){
-                		var uns=this.findChoiceByText(data.select2Data.text);
-                	}else{
-                		var uns=this.findChoiceByText(data.select2Data.name);
-                	}
-                	if(uns && uns.length){
-	                	this.unselect(uns);
-	                }else{
-	                	throw new Error("cannot find element to unselect");
-                	}
+          if (data) {
+              this.highlight(index);
+              
+              if(highlighted.hasClass('select2-selected')){
+              	var data=highlighted.data();
+              	if(this.select){
+              		var uns=this.findChoiceByText(data.select2Data.text);
+              	}else{
+              		var uns=this.findChoiceByText(data.select2Data.name);
+              		if(uns==undefined || uns==null || uns==''){
+                		uns=this.findChoiceByText(data.select2Data.text);
+              		}
+              	}
+              	if(uns && uns.length){
+                	this.unselect(uns);
                 }else{
-	                this.onSelect(data, options);
-                }
-                
-            } else if (options && options.noFocus) {
-                this.close();
-            }
+                	throw new Error("cannot find element to unselect");
+              	}
+              }else{
+                this.onSelect(data, options);
+              }
+              
+          } else if (options && options.noFocus){
+						this.close();
+          }
         },
 
 
@@ -2407,7 +2410,7 @@ the specific language governing permissions and limitations under the Apache Lic
             if (opts.element.get(0).tagName.toLowerCase() === "select") {
                 // install the selection initializer
                 opts.initSelection = function (element, callback) {
-                    var selected = element.find("option").filter(function() { return this.selected });
+                    var selected = element.find("option").filter(function() { return this.selected; });
                     // a single select box always has a value, no need to null check 'selected'
                     callback(self.optionToData(selected));
                 };
@@ -2577,7 +2580,7 @@ the specific language governing permissions and limitations under the Apache Lic
             if (this.select) {
                 this.select
                     .val(val)
-                    .find("option").filter(function() { return this.selected }).each2(function (i, elm) {
+                    .find("option").filter(function() { return this.selected; }).each2(function (i, elm) {
                         data = self.optionToData(elm);
                         return false;
                     });
@@ -2675,7 +2678,7 @@ the specific language governing permissions and limitations under the Apache Lic
 
                     var data = [];
 
-                    element.find("option").filter(function() { return this.selected }).each2(function (i, elm) {
+                    element.find("option").filter(function() { return this.selected; }).each2(function (i, elm) {
                         data.push(self.optionToData(elm));
                     });
                     callback(data);
@@ -3188,6 +3191,13 @@ the specific language governing permissions and limitations under the Apache Lic
 
             val.push(id);
             this.setVal(val);
+            
+			//jyl
+            if(this.opts.discernChoice=='label'){
+	            var texts=this.getText();
+	            texts.push(data.text);
+	            this.setText(texts);
+						}
         },
 
         // multi
@@ -3208,12 +3218,21 @@ the specific language governing permissions and limitations under the Apache Lic
                 // and invoked on an element already removed
                 return;
             }
-
-            while((index = indexOf(this.id(data), val)) >= 0) {
-                val.splice(index, 1);
-                this.setVal(val);
-                //if (this.select) 
-                this.postprocessResults();
+						
+						//jyl
+						if(this.opts.discernChoice=='label'){
+							var textValues=this.getText();
+	            while((index = indexOf(data.text, textValues)) >= 0){
+	              textValues.splice(index, 1);
+	              this.setText(textValues);
+							}
+						}
+	            
+           while((index = indexOf(this.id(data), val)) >= 0){
+              val.splice(index, 1);
+              this.setVal(val);
+              //if (this.select) 
+              this.postprocessResults();
             }
 
             var evt = $.Event("select2-removing");
@@ -3240,17 +3259,32 @@ the specific language governing permissions and limitations under the Apache Lic
                 choices = this.results.find(".select2-result"),
                 compound = this.results.find(".select2-result-with-children"),
                 self = this;
-
+                
+            if(this.opts.discernChoice=='label'){
+							var textValues=this.getText();
+						}
             choices.each2(function (i, choice) {
-                var id = self.id(choice.data("select2-data"));
-                if (indexOf(id, val) >= 0) {
-                    choice.addClass("select2-selected");
-                    // mark all children of the selected parent as selected
-                    choice.find(".select2-result-selectable").addClass("select2-selected");
-                }else if(choice.hasClass('select2-selected')){
-                	choice.removeClass('select2-selected');
-                  choice.find(".select2-result-selectable").removeClass("select2-selected");
+            	var toSelect=false;
+							if(self.opts.discernChoice=='label'){ //jyl mode: searching by text
+								if(inArrayCaseInsensitive(choice.data("select2-data").text,textValues)!=-1){
+									toSelect=true;
+								}
+							}else{	//standard mode: searchinv by value
+								var id = self.id(choice.data("select2-data"));
+                if(indexOf(id, val) >= 0){
+									toSelect=true;
                 }
+							}
+								
+							if(toSelect==true){
+								choice.addClass("select2-selected");
+								// mark all children of the selected parent as selected
+								choice.find(".select2-result-selectable").addClass("select2-selected");
+							}else if(choice.hasClass('select2-selected')){
+								choice.removeClass('select2-selected');
+								choice.find(".select2-result-selectable").removeClass("select2-selected");
+          		}
+            		
             });
 
             compound.each2(function(i, choice) {
@@ -3321,7 +3355,36 @@ the specific language governing permissions and limitations under the Apache Lic
                 return splitVal(val, this.opts.separator);
             }
         },
+        // multi - jyl
+        getText: function () {
+            var text;
+            if (this.select) {
+                text = this.select.attr('text');
+                return text === null || !text ? [] : text;
+            } else {
+                text = this.opts.element.attr('text');
+                if(!text) text="";
+                return splitVal(text, this.opts.textSeparator);
+            }
+        },
 
+        // multi
+        setText: function (text) {
+            var unique;
+            if (this.select) {
+                this.select.attr('text',text);
+                //log('text->'+text);
+            } else {
+                unique = [];
+                // filter out duplicates
+                $(text).each(function () {
+                   if(indexOf(this, unique) < 0) unique.push(this);
+                });
+                this.opts.element.attr('text',unique.length === 0 ? "" : unique.join(this.opts.textSeparator));
+                //log('text->'+text);
+                //log('text inserting->'+(unique.length === 0 ? "" : unique.join(this.opts.textSeparator)));
+            }
+        },
         // multi
         setVal: function (val) {
             var unique;
@@ -3558,6 +3621,7 @@ the specific language governing permissions and limitations under the Apache Lic
             return stripDiacritics(''+text).toUpperCase().indexOf(stripDiacritics(''+term).toUpperCase()) >= 0;
         },
         separator: ",",
+        textSeparator: ";;;",
         tokenSeparators: [],
         tokenizer: defaultTokenizer,
         escapeMarkup: defaultEscapeMarkup,
@@ -3567,11 +3631,13 @@ the specific language governing permissions and limitations under the Apache Lic
         adaptDropdownCssClass: function(c) { return null; },
         nextSearchTerm: function(selectedObject, currentSearchTerm) { return undefined; },
     
+    		//jyl options
         textualSearchEnabled:false,
         textualSearchInputName:"",
         textualSearchInputContainerId:"",
     		textualSearchDeniedValues:["null",null," ","  ","   "],
-    		textualSearchBtnString:"Text Search"
+    		textualSearchBtnString:"Text Search",
+    		discernChoice:''	//modifica jyl del select2 per distinguere la choice by label (e non by id): gli id non sono sempre gli stessi
     };
 
     $.fn.select2.ajaxDefaults = {
