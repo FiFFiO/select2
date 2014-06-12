@@ -167,9 +167,13 @@ the specific language governing permissions and limitations under the Apache Lic
     function splitVal(string, separator) {
         var val, i, l;
         if (string === null || string.length < 1) return [];
-        val = string.split(separator);
-        for (i = 0, l = val.length; i < l; i = i + 1) val[i] = $.trim(val[i]);
-        return val;
+        if(typeof(string)=='object'){
+        	return string;
+        }else{
+	        val = string.split(separator);
+	        for (i = 0, l = val.length; i < l; i = i + 1) val[i] = $.trim(val[i]);
+	        return val;
+        }
     }
 
     function getSideBorderPadding(element) {
@@ -340,7 +344,7 @@ the specific language governing permissions and limitations under the Apache Lic
         if (classes) {
             classes = '' + classes; // for IE which returns object
             $(classes.split(" ")).each2(function() {
-                if (this.indexOf("select2-") === 0) {
+                if (typeof(this.indexOf)=='function' && this.indexOf("select2-") === 0) {
                     replacements.push(this);
                 }
             });
@@ -349,7 +353,7 @@ the specific language governing permissions and limitations under the Apache Lic
         if (classes) {
             classes = '' + classes; // for IE which returns object
             $(classes.split(" ")).each2(function() {
-                if (this.indexOf("select2-") !== 0) {
+                if (typeof(this.indexOf)=='function' && this.indexOf("select2-") !== 0) {
                     adapted = adapter(this);
                     if (adapted) {
                         replacements.push(adapted);
@@ -362,19 +366,20 @@ the specific language governing permissions and limitations under the Apache Lic
 
 
     function markMatch(text, term, markup, escapeMarkup) {
-        var match=stripDiacritics(text.toUpperCase()).indexOf(stripDiacritics(term.toUpperCase())),
-            tl=term.length;
+  		if(text==undefined)text='';
+      var match=stripDiacritics(text.toUpperCase()).indexOf(stripDiacritics(term.toUpperCase())),
+          tl=term.length;
 
-        if (match<0) {
-            markup.push(escapeMarkup(text));
-            return;
-        }
+      if (match<0) {
+          markup.push(escapeMarkup(text));
+          return;
+      }
 
-        markup.push(escapeMarkup(text.substring(0, match)));
-        markup.push("<span class='select2-match'>");
-        markup.push(escapeMarkup(text.substring(match, match + tl)));
-        markup.push("</span>");
-        markup.push(escapeMarkup(text.substring(match + tl, text.length)));
+      markup.push(escapeMarkup(text.substring(0, match)));
+      markup.push("<span class='select2-match'>");
+      markup.push(escapeMarkup(text.substring(match, match + tl)));
+      markup.push("</span>");
+      markup.push(escapeMarkup(text.substring(match + tl, text.length)));
     }
 
     function defaultEscapeMarkup(markup) {
@@ -2988,6 +2993,7 @@ the specific language governing permissions and limitations under the Apache Lic
           	this.search.addClass("select2-default");
         		this.searchPlaceholder.html(placeholder);
            }else{
+//          	 log('updatePlaceholder 2 (clear)');
            	this.clearPlaceholder();
            }
         	
@@ -3188,16 +3194,31 @@ the specific language governing permissions and limitations under the Apache Lic
 
             choice.data("select2-data", data);
             choice.insertBefore(this.searchContainer);
-
-            val.push(id);
-            this.setVal(val);
-            
-			//jyl
-            if(this.opts.discernChoice=='label'){
-	            var texts=this.getText();
+						
+						//jyl
+						if(this.opts.discernChoice=='label'){
+							var texts=this.getText();
 	            texts.push(data.text);
 	            this.setText(texts);
+	            
+							if(typeof(id)!='object'){
+								id=splitVal(id, this.opts.separator);
+							}
+	            for(var i in id){
+								if(typeof(val.indexOf)!='function' || (typeof(val.indexOf)=='function' && (val.indexOf(id[i].toString())) < 0)){
+//									log('faccio il push');
+		            	val.push(id[i].toString());
+//								}else{
+//									log('NON faccio il push');
+								}
+							}
+							
+						}else{
+	            val.push(id);
 						}
+						
+            this.setVal(val);
+            
         },
 
         // multi
@@ -3225,15 +3246,28 @@ the specific language governing permissions and limitations under the Apache Lic
 	            while((index = indexOf(data.text, textValues)) >= 0){
 	              textValues.splice(index, 1);
 	              this.setText(textValues);
+								
+								var valuesToRemove=splitVal(this.id(data), this.opts.separator);
+								for(var i in valuesToRemove){
+									var j=-1;
+									if(typeof(val.indexOf)=='function' && (j=val.indexOf(valuesToRemove[i].toString())) >= 0){
+										val.splice(j, 1);
+									}
+								}
+								this.setVal(val);
+	              this.postprocessResults();
 							}
+						}else{
+							
+							while((index = indexOf(this.id(data), val)) >= 0){
+								val.splice(index, 1);
+								this.setVal(val);
+								//if (this.select) 
+								this.postprocessResults();
+		            }
 						}
+							
 	            
-           while((index = indexOf(this.id(data), val)) >= 0){
-              val.splice(index, 1);
-              this.setVal(val);
-              //if (this.select) 
-              this.postprocessResults();
-            }
 
             var evt = $.Event("select2-removing");
             evt.val = this.id(data);
@@ -3389,14 +3423,14 @@ the specific language governing permissions and limitations under the Apache Lic
         setVal: function (val) {
             var unique;
             if (this.select) {
-                this.select.val(val);
+              this.select.val(val);
             } else {
-                unique = [];
-                // filter out duplicates
-                $(val).each(function () {
-                    if (indexOf(this, unique) < 0) unique.push(this);
-                });
-                this.opts.element.val(unique.length === 0 ? "" : unique.join(this.opts.separator));
+              unique = [];
+              // filter out duplicates
+              $(val).each(function () {
+                  if (indexOf(this, unique) < 0) unique.push(this);
+              });
+              this.opts.element.val(unique.length === 0 ? "" : unique.join(this.opts.separator));
             }
         },
 
@@ -3514,7 +3548,7 @@ the specific language governing permissions and limitations under the Apache Lic
             } else {
                 old = this.data();
                 if (!values) { values = []; }
-                ids = $.map(values, function(e) { return self.opts.id(e); });
+                ids = $.map(values, function(e) {return self.opts.id(e); });
                 this.setVal(ids);
                 this.updateSelection(values);
                 this.clearSearch();
