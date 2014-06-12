@@ -3303,7 +3303,7 @@ the specific language governing permissions and limitations under the Apache Lic
 								if(inArrayCaseInsensitive(choice.data("select2-data").text,textValues)!=-1){
 									toSelect=true;
 								}
-							}else{	//standard mode: searchinv by value
+							}else{	//standard mode: searching by value
 								var id = self.id(choice.data("select2-data"));
                 if(indexOf(id, val) >= 0){
 									toSelect=true;
@@ -3419,6 +3419,15 @@ the specific language governing permissions and limitations under the Apache Lic
                 //log('text inserting->'+(unique.length === 0 ? "" : unique.join(this.opts.textSeparator)));
             }
         },
+        // multi - jyl
+        cleanText: function () {
+        	if(this.select){
+        		this.select.attr('text','');
+        		//log('text->'+text);
+        	}else{
+        		this.opts.element.attr('text','');
+        	}
+        },        
         // multi
         setVal: function (val) {
             var unique;
@@ -3434,6 +3443,7 @@ the specific language governing permissions and limitations under the Apache Lic
             }
         },
 
+        
         // multi
         buildChangeDetails: function (old, current) {
             var current = current.slice(0),
@@ -3546,15 +3556,19 @@ the specific language governing permissions and limitations under the Apache Lic
                      .map(function() { return $(this).data("select2-data"); })
                      .get();
             } else {
-                old = this.data();
-                if (!values) { values = []; }
-                ids = $.map(values, function(e) {return self.opts.id(e); });
-                this.setVal(ids);
-                this.updateSelection(values);
-                this.clearSearch();
-                if (triggerChange) {
-                    this.triggerChange(this.buildChangeDetails(old, this.data()));
-                }
+            	 //jyl: reset text attribute
+            	if(self.opts.discernChoice=='label'){
+            		this.cleanText();
+            	}
+              old = this.data();
+              if (!values) { values = []; }
+              ids = $.map(values, function(e) {return self.opts.id(e); });
+              this.setVal(ids);
+              this.updateSelection(values);
+              this.clearSearch();
+              if (triggerChange) {
+                  this.triggerChange(this.buildChangeDetails(old, this.data()));
+              }
             }
         }
     });
